@@ -40,9 +40,9 @@ double interp_scalar(double X[NDIM], double ***var)
 
   // then interpolate in x3
   interp = (1.-del[3])*interp +
-        del[3]*(var[i  ][j  ][kp1]*b1*b2 +
-      var[i  ][jp1][kp1]*del[2]*b1 +
-      var[ip1][j  ][kp1]*del[1]*b2 +
+        del[3]*(var[i][j][kp1]*b1*b2 +
+      var[i][jp1][kp1]*del[2]*b1 +
+      var[ip1][j][kp1]*del[1]*b2 +
       var[ip1][jp1][kp1]*del[1]*del[2]);
 
   return interp;
@@ -286,4 +286,28 @@ double gdet_zone(int i, int j, int k)
   }
 
   return gdet_func(gcov);
+}
+
+double radial_derivative(int i1, int j1, int k1, double ***var)
+{
+  double del[NDIM] = {0}, b1 = 0, b2 = 0, interp = 0;
+  int i = 0, j = 0, k = 0, ip1 = 0, im1 = 0;
+  double X[NDIM] = {0.};
+  ijktoX(i1, j1, k1, X);
+  // zone and offset from X
+  Xtoijk(X, &i, &j, &k, del);
+  // i1 = i but just to prevent the segmentation error...
+  
+  // since we read from data, adjust i,j,k for ghost zones
+  i += 1;
+  j += 1;
+  k += 1;
+
+  ip1 = i+1;
+  im1 = i-1;
+
+  // interpolate in x1 and x2
+  interp = (var[ip1][j][k] - var[im1][j][k]) / (2 * dx[1]);
+
+  return interp;
 }
